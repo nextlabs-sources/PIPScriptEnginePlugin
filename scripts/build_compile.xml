@@ -1,0 +1,52 @@
+<project name="PIPScriptEnginePlugin" default="all" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
+	<property name="nlbuildroot" location="${basedir}/.." />
+
+	<property file="${nlbuildroot}/scripts/build.properties" />
+	<property file="${nlbuildroot}/scripts/build_common.properties" />
+	<property name="build_dir" value="${nlbuildroot}/build" />
+	<property name="docs_dir" value="${nlbuildroot}/docs" />
+	<property name="package_dir" value="${build_dir}/${package_name}" />
+	<property name="dist_zip_file_name" value="${package_name}-${version_str}-${version_build_short}-${build_date_long}.zip" />
+
+	<echo message="xlib_jar_dir = ${xlib_jar_dir}" />
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${xlib_jar_dir}/ant-contrib.jar" />
+		</classpath>
+	</taskdef>
+
+	<!-- Targets -->
+	<target name="all" description="Default for all" depends="clean, compile, package" />
+
+	<target name="clean" description="Delete all build artifacts" depends="">
+		<delete includeemptydirs="true" dir="${build_dir}" />
+	</target>
+
+
+	<target name="compile">
+		<mkdir dir="${nlbuildroot}/build" />
+		<ant dir="${nlbuildroot}/src" target="build" inheritRefs="true" />
+	</target>
+
+	<target name="package" description="package the plugins">
+		<mkdir dir="${package_dir}" />		
+		
+		<copy file="${build_dir}/${package_name}-server.jar" todir="${package_dir}/Control Center" overwrite="true" />
+		<copy file="${nlbuildroot}/etc/PIPScritpEngineServer.properties" todir="${package_dir}/Control Center/" overwrite="true" />
+		
+		<copy file="${build_dir}/${package_name}-client.jar" todir="${package_dir}/Policy Controller" overwrite="true" />
+		<copy file="${nlbuildroot}/etc/PIPScritpEngineClient.properties" todir="${package_dir}/Policy Controller" overwrite="true" />
+
+		<!-- TODO 
+		<copy file="${docs_dir}/readme.pdf" tofile="${package_dir}/readme.pdf" overwrite="true" />
+		-->
+
+		<zip destfile="${build_dir}/${dist_zip_file_name}" encoding="UTF-8">
+			<fileset dir="${package_dir}">
+				<include name="**/*.*" />
+			</fileset>
+		</zip>
+
+	</target>
+
+</project>

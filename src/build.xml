@@ -1,0 +1,101 @@
+<project  name="PIPScriptEnginePlugin" default="build" basedir=".">
+
+    <!-- Properties -->
+	<property name="nlbuildroot" location="${basedir}/.." />
+
+	<property file="${nlbuildroot}/scripts/build.properties" />
+	<property file="${nlbuildroot}/scripts/build_common.properties" />
+    
+    <property name="src.server.java.dir" value="${basedir}/server" />
+    <property name="src.client.java.dir" value="${basedir}/client" />
+    <property name="src.common.java.dir" value="${basedir}/common" />
+    
+    <property name="build.server.dir" value="${build_dir}/server" />
+    <property name="build.client.dir" value="${build_dir}/client" />
+
+    <property name="build.server.classes.dir" value="${build_dir}/server/classes" />
+    <property name="build.client.classes.dir" value="${build_dir}/client/classes" />
+    
+    <property name="compile.debug" value="true" />
+
+    <tstamp>
+		<format property="local.now" pattern="EEE, d MMM yyyy HH:mm:ss Z" />
+	</tstamp>
+
+    <path id="compile.classpath">
+		<fileset dir="${xlib_dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+    
+    <target name="clean" description="Delete all artifacts in build folder">
+        <delete includeEmptyDirs="true" failonerror="false">
+            <fileset dir="${build.server.dir}" />
+            <fileset dir="${build.client.dir}" />
+        </delete>
+        <echo>Deleted folder: ${build.server.dir}</echo>
+        <echo>Deleted folder: ${build.client.dir}</echo>
+    </target>
+    
+    <target name="pre-build">
+        <mkdir dir="${build.server.dir}" />
+        <mkdir dir="${build.client.dir}" />
+        <mkdir dir="${build.server.classes.dir}" />
+        <mkdir dir="${build.client.classes.dir}" />
+    </target>
+    
+    <target name="compile-server" description="Compile the server source code"
+        depends="pre-build">
+        <javac destdir="${build.server.classes.dir}"
+            debug="${compile.debug}" debuglevel="lines,vars,source">
+            <src path="${src.server.java.dir}" />
+            <src path="${src.common.java.dir}" />
+            <classpath refid="compile.classpath" />
+            <include name="**/*.java" />
+        </javac>
+    </target>
+
+    <target name="compile-client" description="Compile the client source code"
+        depends="pre-build">
+        <javac destdir="${build.client.classes.dir}"
+            debug="${compile.debug}" debuglevel="lines,vars,source">
+            <src path="${src.client.java.dir}" />
+            <src path="${src.common.java.dir}" />
+            <classpath refid="compile.classpath" />
+            <include name="**/*.java" />
+        </javac>
+    </target>
+    
+    <target name="server-jar">
+        <echo>Creating nextlabs PIP script engine plugin server jar file: ${package_name}-server.jar</echo>
+
+        <jar destfile="${build_dir}/${package_name}-server.jar" basedir="${build.server.classes.dir}" excludes="**/*Test.class">
+            <manifest>
+                <attribute name="Provider-Class" value="com.nextlabs.plugins.jwtsecret.JwtSecretServer" />
+				<attribute name="Implementation-Vendor" value="NextLabs, Inc." />
+				<attribute name="Author" value="Amila Silva" />
+				<attribute name="Implementation-Title" value="${product_name}" />
+				<attribute name="Implementation-Version" value="${version_str} (${build_number})" />
+				<attribute name="Implementation-Time" value="${local.now}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="client-jar">
+        <echo>Creating nextlabs PIP script engine plugin client jar file: ${package_name}-client.jar</echo>
+
+        <jar destfile="${build_dir}/${package_name}-client.jar" basedir="${build.client.classes.dir}" excludes="**/*Test.class">
+            <manifest>
+                <attribute name="Provider-Class" value="com.nextlabs.plugins.jwtsecret.JwtSecretClient" />
+				<attribute name="Implementation-Vendor" value="NextLabs, Inc." />
+				<attribute name="Author" value="Amila Silva" />
+				<attribute name="Implementation-Title" value="${product_name}" />
+				<attribute name="Implementation-Version" value="${version_str} (${build_number})" />
+				<attribute name="Implementation-Time" value="${local.now}" />
+            </manifest>
+        </jar>
+    </target>
+    
+    <target name="build" depends="clean, pre-build, compile-server, compile-client, server-jar, client-jar" />
+
+</project>
